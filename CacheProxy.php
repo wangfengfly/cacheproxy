@@ -32,6 +32,9 @@ class CacheProxy{
         }
         $k = $this->generateKey($name, $arguments);
         $redis = RedisPool::getInstance("config.ini")->getRedisConnection($this->redisname);
+        if($redis === false){
+            return false;
+        }
         switch($this->t){
             case self::TYPE_R:
                 $res = $redis->get($k);
