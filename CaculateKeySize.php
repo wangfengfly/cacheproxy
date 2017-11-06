@@ -10,26 +10,43 @@ class CaculateKeySize{
 
     public function run(){
         $command = 'redis-cli -h a.redis.sogou -p 1976 -a hahaunimportant';
-        $keys = shell_exec($command.' keys "*"');
+        $keys = shell_exec($command.' scan 0');
         $keys = explode("\n", $keys);
         $total = 0;
         $content = array();
-        foreach($keys as $key){
-            if($key){
-                $ret = shell_exec($command." debug object $key");
-                $ret = explode(' ', $ret);
-                $size = explode(':', $ret[4]);
-                $total += $size[1];
-                $content[$key] = $size[1];
+        while(count($keys)>0 && $keys[0]!=0){
+            $cursor = $keys[0];
+            $keysn = count($keys);
+            for($i=1; $i<=$keysn; $i++){
+                $key = $keys[$i];
+                if($key){
+                    $ret = shell_exec($command." debug object $key");
+                    $ret = explode(' ', $ret);
+                    $size = explode(':', $ret[4]);
+                    $total += $size[1];
+                    $content[$key] = $size[1];
+                }
             }
+            $keys = shell_exec($command." scan $cursor");
+            $keys = explode("\n", $keys);
         }
+
         arsort($content);
         $str = '';
+        $head = '';
+        $i=0;
         foreach($content as $key=>$size){
-            $str .= $key."\t".$size."\n";
+            if($size) {
+                $line = $key . ":\t" . $size . " Bytes\n";
+                $str .= $line;
+                if ($i <= 50) {
+                    $head .= $line . "<br>";
+                    $i++;
+                }
+            }
         }
-        file_put_contents('./size.csv', $str);
-        var_dump($total);
+        $filename = md5(trim($host).$passwd);
+        file_put_contents("/tmp/$filename.csv", $str);
     }
 
 }
