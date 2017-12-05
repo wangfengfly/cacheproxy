@@ -78,6 +78,15 @@ class Comic extends Page_MBase {
                 $datalist[] = array('item'=>$item);
                 $booktotal++;
             }
+            //不足20个的处理
+            if($booktotal>0){
+                $data['sdd']['datalist'] = $datalist;
+                $xmlstr = $this->builder->buildXML($data, null);
+                $now = time();
+                $filename = $this->xmlpath.$now.'.xml';
+                file_put_contents($filename, $xmlstr);
+                $locs[] = self::XML_URL.$now.'.xml';
+            }
 
             $sitemapindex = array();
             foreach($locs as $loc){
