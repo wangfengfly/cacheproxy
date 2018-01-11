@@ -57,6 +57,37 @@ class DB{
     }
 
     /**
+     * @return mixed
+     * fetch_row的第二种实现
+     */
+    public function fetch_row2(){
+        $links = array($this->mysqli);
+
+        $_links = $_errors = $_reject = $links;
+        $i = 0;
+        while(!mysqli_poll($_links,$_errors,$_reject,1) && $i<20){
+            $i++;
+        }
+        if($i>=20){
+            die('mysqli_poll error');
+        }
+
+        if(count($_links)>0){
+            $link = $_links[0];
+            if($result = $link->reap_async_query()){
+                $row = $result->fetch_array(MYSQLI_ASSOC);
+                if(is_object($result)){
+                    mysqli_free_result($result);
+                }
+                return $row;
+            }else{
+                die(sprintf("MySQLi Error: %s", mysqli_error($link)));
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return array
      * 从结果集中获取多行
      */
