@@ -7,11 +7,14 @@
  */
 class Cron_Demo2{
 
-    /*public function work($page, $pagesize){
+    /*
+     * 第一种方式，这种方式要求在父进程中fork之前先释放掉到数据库的连接，
+     * 否则子进程会继承父进程的数据库连接，导致mysql gone away 的错误
+     */
+    public function work($page, $pagesize){
         $book = new Book();
         $chapter = new Chapter();
         $deadlinks = array();
-
         $bookd = $book->orderBy('id',SOSO_ORM_Restrictions::ASC)->setPage($page, $pagesize)->find();
         if($bookd){
             $bids = array();
@@ -28,9 +31,15 @@ class Cron_Demo2{
             }
         }
         var_dump($deadlinks);
-    }*/
+    }
 
-    public function work($page, $pagesize){
+    /**
+     * @param $page
+     * @param $pagesize
+     * 第二种方式，每个子进程单独打开数据库连接描述符，避免
+     * 多个子进程之间共享描述符导致的mysql gone away错误
+     */
+    public function work2($page, $pagesize){
         $db = new PDO('mysql:host=hostname;dbname=comic;charset=utf8', 'username', 'passwd');
         $deadlinks = array();
         $limit = ($page-1)*$pagesize;
@@ -59,8 +68,13 @@ class Cron_Demo2{
 
 
     public function run(){
+
         $book = new Book();
         $n = $book->count();
+        //父进程先关闭到数据库的连接，子进程会重新连接数据库，这样子进程就不会继承父进程的数据库连接
+        //也就可以避免General error: 2006 MySQL server has gone away 问题
+        $book->mSQLCommand->setActive(false);
+
         $pagesize = 1000;
         $pages = ceil($n/$pagesize);
         $funcs = array();

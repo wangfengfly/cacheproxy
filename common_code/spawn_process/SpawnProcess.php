@@ -24,6 +24,7 @@ class SpawnProcess {
             if($pid == -1){
                 echo "fork new process failed.\n";
                 $this->waitpid();
+                exit;
             }else if($pid == 0){
                 $res = call_user_func_array(array($func[0], $func[1]), $func[2]);
                 echo "res====$res\n";
