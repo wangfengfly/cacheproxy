@@ -10,6 +10,7 @@ class Cron_Demo2{
     /*
      * 第一种方式，这种方式要求在父进程中fork之前先释放掉到数据库的连接，
      * 否则子进程会继承父进程的数据库连接，导致mysql gone away 的错误
+     * 参考：https://www.cnblogs.com/AllenChou/p/6607182.html
      */
     public function work($page, $pagesize){
         $book = new Book();
