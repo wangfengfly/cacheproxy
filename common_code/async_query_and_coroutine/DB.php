@@ -19,6 +19,10 @@ class DB{
         $this->mysqli = new mysqli($host, $username, $passwd, $database);
     }
 
+    public function __destruct(){
+        $this->mysqli->close();
+    }
+
     /**
      * @param $sql
      * @return mixed
