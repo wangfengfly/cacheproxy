@@ -28,6 +28,9 @@ class SpawnProcess {
             }else if($pid == 0){
                 $res = call_user_func_array(array($func[0], $func[1]), $func[2]);
                 echo "res====$res\n";
+                if($res===false) {
+                    exit(1);
+                }
                 exit(0);
             }else{
                 $this->pids[] = $pid;
